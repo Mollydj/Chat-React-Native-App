@@ -64,7 +64,7 @@ export default class Start extends React.Component { // The application’s Star
 
           <Button
             onPress={() =>
-              this.props.navigation.navigate("Chat", { //Allows the state to flow to the chat component
+              this.props.navigation.navigate('Chat', { //Allows the state to flow to the chat component
                 name: this.state.name,
                 userBackgroundColor: this.state.userBackgroundColor,
               })
