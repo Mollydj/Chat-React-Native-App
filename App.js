@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { StyleSheet } from "react-native";
-
+import KeyboardSpacer from 'react-native-keyboard-spacer'
 // Import Screens we want access to
 import Chat from "./components/Chat";
 import Start from "./components/Start";
