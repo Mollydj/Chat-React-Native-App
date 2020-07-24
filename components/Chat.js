@@ -1,19 +1,54 @@
 import React, {Component} from "react";
 import { View, Text, Platform } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
-
-//Only for android chat
-import KeyboardSpacer from 'react-native-keyboard-spacer';
+const firebase = require("firebase");
+require("firebase/firestore");
 
 export default class Chat extends React.Component {
   // The application’s main Chat component that renders the chat UI
+  constructor(props) {
+    super(props);
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey: "AIzaSyDNjTKM77rlnWU97EgpMSVFhWJLsNWsAag",
+        authDomain: "chat-app-midj.firebaseapp.com",
+        databaseURL: "https://chat-app-midj.firebaseio.com",
+        projectId: "chat-app-midj",
+        storageBucket: "chat-app-midj.appspot.com",
+        messagingSenderId: "845000414486",
+      }); 
+    }
 
-  state = {
-    messages: [],
-  };
+    //Read all documents in the shopping lists collection
+    this.referenceShoppingLists = firebase
+      .firestore()
+      .collection("messagesdb");
 
+      
+
+    //default state
+    this.state = {
+      messages: [],
+      uid: '',
+      loggedInText: ''
+      
+    };
+  }
   componentDidMount() {
     let name = this.props.route.params.name;
+
+    this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        async => firebase.auth().signInAnonymously();
+      }
+
+      //update user state with currently active user data
+      this.setState({
+        uid: user.uid,
+        loggedInText: 'Hello there',
+      });
+    });
+    
     this.setState({
       messages: [
         {
