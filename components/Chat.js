@@ -116,7 +116,7 @@ export default class Chat extends React.Component {
           messages={this.state.messages} //State messages will be deisplayed
           onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
           user={{
-            _id: 1,
+            _id: 0,
           }}
         />
 
