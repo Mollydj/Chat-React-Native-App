@@ -11,8 +11,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 export default class HelloWorld extends Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = { text: "" };
   }
 
