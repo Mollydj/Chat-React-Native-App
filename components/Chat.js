@@ -27,22 +27,12 @@ export default class Chat extends React.Component {
     //default state
     this.state = {
       messages: [],
+      uid: '',
       user: {
         _id: "",
         name: "",
-        avatar: "",
       }
     };
-  }
-
-  componentDidMount() {
-    this.unsubscribe = this.referenceMessages.onSnapshot(
-      this.onCollectionUpdate
-    );
-  }
-
-  componentWillUnmount() {
-    this.unsubscribe();
   }
 
   onCollectionUpdate = (querySnapshot) => {
@@ -51,27 +41,54 @@ export default class Chat extends React.Component {
       //get the QueryDocumentShapshot's data
       const data = doc.data();
       messages.push({
-        _id: data._id,
+        _id: data._id, 
         text: data.text,
-        createdAt: new Date(),
-        //  user: {
-        //   _id: data.user._id,
-        //   name: data.user.name,
-        //   avatar: data.user.avatar,
-        // }
+        createdAt: data.createdAt.toDate(),
+        user: data.user,
       });
     });
     this.setState({
       messages,
     });
+    console.log(this.state.messages)
   };
+
+
+  componentDidMount() {
+
+    this.authUnsubscribe = firebase.auth().onAuthStateChanged(async user => {
+      if (!user) {
+        await  firebase.auth().signInAnonymously();
+      } else {
+        //update user state with currently active user data
+        this.setState({
+          uid: user.uid,
+          loggedInText: "Hello there",
+        });
+      }
+      this.unsubscribe = this.referenceMessages.orderBy('createdAt','desc').onSnapshot(
+        this.onCollectionUpdate
+      );
+
+
+    });
+  }
+
+  componentWillUnmount() {
+    this.authUnsubscribe();
+    this.unsubscribe();
+ 
+  }
+
+
 
   addMsg = () => {
     const message = this.state.messages[0];
     this.referenceMessages.add({
       _id: message._id,
-      text: message.text,
-     // uid: this.state.uid,
+      text: message.text || '',
+      createdAt: message.createdAt,
+      user: message.user
     });
   }
 
@@ -100,7 +117,7 @@ export default class Chat extends React.Component {
     );
   }
   render() {
-    console.log(this.state.messages)
+    console.log(this.state.uid)
     return (
       <View
         style={[
@@ -116,11 +133,9 @@ export default class Chat extends React.Component {
           messages={this.state.messages} //State messages will be deisplayed
           onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
           user={{
-            _id: 0,
+            _id: this.state.uid
           }}
-        />
-
-        {/* Keyboard for android only */}
+        /> 
       </View>
     );
   }
