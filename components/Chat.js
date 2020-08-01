@@ -20,7 +20,7 @@ export default class Chat extends React.Component {
         name: "",
         avatar: "",
       },
-      isConnected: true,
+      isConnected: false,
     };
 
     if (!firebase.apps.length) {
@@ -36,27 +36,27 @@ export default class Chat extends React.Component {
 
     //Read all documents in the messages collection
     this.referenceMessages = firebase.firestore().collection("usermessages");
-
-
   }
 
   componentDidMount() {
-    NetInfo.isConnected.fetch().then(isConnected => {
-      this.setState({ isConnected: true });
-      if (isConnected === true) {
+    NetInfo.fetch().then((isConnected) => {
+      if (isConnected) {
+        // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
+        // });
+        console.log("online");
         this.authUnsubscribe = firebase
           .auth()
           .onAuthStateChanged(async (user) => {
             if (!user) {
               await firebase.auth().signInAnonymously();
-            } else {
-              //update user state with currently active user data
-              this.setState({
-                uid: user.uid,
-                loggedInText: "Hello there",
-              });
-              console.log("online");
-            }
+            } //else {
+            //update user state with currently active user data
+            this.setState({
+              uid: user.uid,
+              loggedInText: "Hello there",
+              isConnected: true,
+            });
+            //}
             this.unsubscribe = this.referenceMessages
               .orderBy("createdAt", "desc")
               .onSnapshot(this.onCollectionUpdate);
@@ -65,18 +65,42 @@ export default class Chat extends React.Component {
         console.log("offline");
         this.setState({ isConnected: false });
         this.getMsgs();
-      }
-
+      } 
     });
-
-
-    NetInfo.isConnected.fetch().then(isConnected => {
-      console.log('First, is ' + (isConnected ? 'online' : 'offline'));
-    });
-
-
   }
 
+  // componentDidMount() {
+  //   NetInfo.isConnected.fetch().then(isConnected => {
+  //     if (isConnected) {
+  //       this.authUnsubscribe = firebase
+  //         .auth()
+  //         .onAuthStateChanged(async (user) => {
+  //           if (!user) {
+  //             await firebase.auth().signInAnonymously();
+  //           } //else {
+  //             //update user state with currently active user data
+  //             this.setState({
+  //               uid: user.uid,
+  //               loggedInText: "Hello there",
+  //               isConnected: true
+  //             });
+  //             console.log("online");
+  //         //}
+  //           this.unsubscribe = this.referenceMessages
+  //             .orderBy("createdAt", "desc")
+  //             .onSnapshot(this.onCollectionUpdate);
+  //         });
+  //     } else {
+  //       console.log("offline");
+  //       this.setState({ isConnected: false });
+  //       this.getMsgs();
+  //     }
+
+  //   });
+  //   NetInfo.isConnected.fetch().then(isConnected => {
+  //     console.log('First, is ' + (isConnected ? 'online' : 'offline'));
+  //   });
+  // }
 
   componentWillUnmount() {
     this.authUnsubscribe();
@@ -104,7 +128,11 @@ export default class Chat extends React.Component {
         _id: data._id,
         text: data.text,
         createdAt: data.createdAt.toDate(),
-        user: data.user,
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+          avatar: data.user.avatar,
+        },
       });
     });
     this.setState({
@@ -123,8 +151,6 @@ export default class Chat extends React.Component {
     });
   };
 
-
-
   async getMsgs() {
     let messages = "";
     try {
@@ -137,7 +163,6 @@ export default class Chat extends React.Component {
     }
   }
 
-
   async saveMsgs() {
     try {
       await AsyncStorage.setItem(
@@ -145,11 +170,9 @@ export default class Chat extends React.Component {
         JSON.stringify(this.state.messages)
       );
     } catch (error) {
-       console.log(error.message);
+      console.log(error.message);
     }
   }
-
-
 
   // async deleteMsgs() {
   //   try {
@@ -158,8 +181,6 @@ export default class Chat extends React.Component {
   //     console.log(error.message);
   //   }
   // }
-
-
 
   renderBubble(props) {
     return (
@@ -205,7 +226,4 @@ export default class Chat extends React.Component {
       </View>
     );
   }
-
- 
-
 }
