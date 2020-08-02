@@ -43,7 +43,7 @@ export default class Chat extends React.Component {
       if (isConnected) {
         // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
         // });
-        console.log("online");
+        //console.log("online");
         this.authUnsubscribe = firebase
           .auth()
           .onAuthStateChanged(async (user) => {
@@ -62,9 +62,12 @@ export default class Chat extends React.Component {
               .onSnapshot(this.onCollectionUpdate);
           });
       } else {
-        console.log("offline");
-        this.setState({ isConnected: false });
+        //console.log("offline");
+
         this.getMsgs();
+        this.setState({ isConnected: false });
+        
+
       } 
     });
   }
@@ -203,7 +206,7 @@ export default class Chat extends React.Component {
   }
 
   render() {
-    //console.log(this.state.isConnected)
+    console.log(this.state.isConnected)
     return (
       <View
         style={[
