@@ -41,38 +41,38 @@ export default class Chat extends React.Component {
 
   componentDidMount() {
 
-    // NetInfo.isConnected.fetch().then((isConnected) => {
-    //   if (isConnected === true) {
-    //     // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
-    //     // });
+    NetInfo.isConnected.fetch().then((isConnected) => {
+      if (isConnected === true) {
+        // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
+        // });
         
-    //     this.authUnsubscribe = firebase
-    //       .auth()
-    //       .onAuthStateChanged(async (user) => {
-    //         if (!user) {
-    //           await firebase.auth().signInAnonymously();
-    //         } //else {
-    //         //update user state with currently active user data
-    //         this.setState({
-    //           uid: user.uid,
-    //           loggedInText: "Hello there",
-    //           isConnected: true,
-    //         });
-    //         //}
-    //         console.log('online ' + this.state.isConnected);
-    //         this.unsubscribe = this.referenceMessages
-    //           .orderBy("createdAt", "desc")
-    //           .onSnapshot(this.onCollectionUpdate);
-    //       });
-    //   } else {
+        this.authUnsubscribe = firebase
+          .auth()
+          .onAuthStateChanged(async (user) => {
+            if (!user) {
+              await firebase.auth().signInAnonymously();
+            } //else {
+            //update user state with currently active user data
+            this.setState({
+              uid: user.uid,
+              loggedInText: "Hello there",
+              isConnected: true,
+            });
+            //}
+            console.log('online ' + this.state.isConnected);
+            this.unsubscribe = this.referenceMessages
+              .orderBy("createdAt", "desc")
+              .onSnapshot(this.onCollectionUpdate);
+          });
+      } else {
         
-    //    this.setState({ isConnected: false });
-    //    this.getMsgs();
-    //     console.log('offline ' + this.state.isConnected);
+       this.setState({ isConnected: false });
+       this.getMsgs();
+        console.log('offline ' + this.state.isConnected);
 
-    //   }
-    // });
-    // console.log('__________________');
+      }
+    });
+    console.log('__________________');
   }
 
 
