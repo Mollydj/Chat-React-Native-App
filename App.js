@@ -5,6 +5,8 @@ import KeyboardSpacer from 'react-native-keyboard-spacer'
 import Chat from "./components/Chat";
 import Start from "./components/Start";
 
+
+
 // Allows for multiple page views
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
@@ -15,6 +17,7 @@ export default class HelloWorld extends Component {
     super();
     this.state = { text: "" };
   }
+
 
   render() {
     const Stack = createStackNavigator();
@@ -37,6 +40,9 @@ export default class HelloWorld extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-  },
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%"
+  }
 });

@@ -1,6 +1,7 @@
 //chat orig
 import React from "react";
 import { View, Text, AsyncStorage } from "react-native";
+//import NetInfo from 'react-native-netinfo'
 import NetInfo from "@react-native-community/netinfo";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 const firebase = require("firebase");
@@ -20,7 +21,7 @@ export default class Chat extends React.Component {
         name: "",
         avatar: "",
       },
-      isConnected: false,
+           // isConnected: false,
     };
 
     if (!firebase.apps.length) {
@@ -39,71 +40,41 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount() {
-    NetInfo.fetch().then((isConnected) => {
-      if (isConnected) {
-        // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
-        // });
-        //console.log("online");
-        this.authUnsubscribe = firebase
-          .auth()
-          .onAuthStateChanged(async (user) => {
-            if (!user) {
-              await firebase.auth().signInAnonymously();
-            } //else {
-            //update user state with currently active user data
-            this.setState({
-              uid: user.uid,
-              loggedInText: "Hello there",
-              isConnected: true,
-            });
-            //}
-            this.unsubscribe = this.referenceMessages
-              .orderBy("createdAt", "desc")
-              .onSnapshot(this.onCollectionUpdate);
-          });
-      } else {
-        //console.log("offline");
 
-        this.getMsgs();
-        this.setState({ isConnected: false });
+    // NetInfo.isConnected.fetch().then((isConnected) => {
+    //   if (isConnected === true) {
+    //     // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
+    //     // });
         
+    //     this.authUnsubscribe = firebase
+    //       .auth()
+    //       .onAuthStateChanged(async (user) => {
+    //         if (!user) {
+    //           await firebase.auth().signInAnonymously();
+    //         } //else {
+    //         //update user state with currently active user data
+    //         this.setState({
+    //           uid: user.uid,
+    //           loggedInText: "Hello there",
+    //           isConnected: true,
+    //         });
+    //         //}
+    //         console.log('online ' + this.state.isConnected);
+    //         this.unsubscribe = this.referenceMessages
+    //           .orderBy("createdAt", "desc")
+    //           .onSnapshot(this.onCollectionUpdate);
+    //       });
+    //   } else {
+        
+    //    this.setState({ isConnected: false });
+    //    this.getMsgs();
+    //     console.log('offline ' + this.state.isConnected);
 
-      } 
-    });
+    //   }
+    // });
+    // console.log('__________________');
   }
 
-  // componentDidMount() {
-  //   NetInfo.isConnected.fetch().then(isConnected => {
-  //     if (isConnected) {
-  //       this.authUnsubscribe = firebase
-  //         .auth()
-  //         .onAuthStateChanged(async (user) => {
-  //           if (!user) {
-  //             await firebase.auth().signInAnonymously();
-  //           } //else {
-  //             //update user state with currently active user data
-  //             this.setState({
-  //               uid: user.uid,
-  //               loggedInText: "Hello there",
-  //               isConnected: true
-  //             });
-  //             console.log("online");
-  //         //}
-  //           this.unsubscribe = this.referenceMessages
-  //             .orderBy("createdAt", "desc")
-  //             .onSnapshot(this.onCollectionUpdate);
-  //         });
-  //     } else {
-  //       console.log("offline");
-  //       this.setState({ isConnected: false });
-  //       this.getMsgs();
-  //     }
-
-  //   });
-  //   NetInfo.isConnected.fetch().then(isConnected => {
-  //     console.log('First, is ' + (isConnected ? 'online' : 'offline'));
-  //   });
-  // }
 
   componentWillUnmount() {
     this.authUnsubscribe();
@@ -161,9 +132,7 @@ export default class Chat extends React.Component {
       this.setState({
         messages: JSON.parse(messages),
       });
-    } catch (error) {
-      console.log(error.message);
-    }
+    } catch (error) {}
   }
 
   async saveMsgs() {
@@ -177,13 +146,13 @@ export default class Chat extends React.Component {
     }
   }
 
-  // async deleteMsgs() {
-  //   try {
-  //     await AsyncStorage.removeItem("messages");
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // }
+  async deleteMsgs() {
+    try {
+      await AsyncStorage.removeItem("messages");
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
   renderBubble(props) {
     return (
@@ -206,7 +175,18 @@ export default class Chat extends React.Component {
   }
 
   render() {
-    console.log(this.state.isConnected)
+    //console.log(this.state.isConnected)
+    
+    //console.log(this.state.messages)
+    NetInfo.isConnected.fetch().then(isConnected => {
+      if(isConnected)
+      {
+      console.log('Internet is connected');
+      } else {
+        console.log('Internet is offline');
+      }
+      });
+
     return (
       <View
         style={[
@@ -221,6 +201,7 @@ export default class Chat extends React.Component {
           renderBubble={this.renderBubble.bind(this)} //Chat bubble
           renderInputToolbar={this.renderInputToolbar.bind(this)} //Hide if offline
           messages={this.state.messages} //State messages will be deisplayed
+          //deleteMsgs={(messages) => this.deleteMsgs()}
           onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
           user={{
             _id: this.state.uid,
