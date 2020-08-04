@@ -54,7 +54,9 @@ export default class Chat extends React.Component {
             } //else {
             //update user state with currently active user data
             this.setState({
-              uid: user.uid,
+              user: {
+                _id: user.uid,
+              },
               loggedInText: "Hello there",
               isConnected: true,
             });
@@ -66,19 +68,22 @@ export default class Chat extends React.Component {
           });
       } else {
         
-       this.setState({ isConnected: false });
+       this.setState({ 
+         isConnected: false,
+         });
        this.getMsgs();
         console.log('offline ' + this.state.isConnected);
-
+s
       }
     });
     console.log('__________________');
-  }
+  } 
 
 
   componentWillUnmount() {
     this.authUnsubscribe();
     this.unsubscribe();
+    
   }
 
   onSend(messages = []) {
@@ -177,7 +182,7 @@ export default class Chat extends React.Component {
   render() {
     //console.log(this.state.isConnected)
     
-    //console.log(this.state.messages)
+    console.log(this.state.messages)
     NetInfo.isConnected.fetch().then(isConnected => {
       if(isConnected)
       {
