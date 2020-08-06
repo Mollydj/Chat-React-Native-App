@@ -21,6 +21,7 @@ export default class HelloWorld extends Component {
 
   render() {
     const Stack = createStackNavigator();
+
     return (
       <NavigationContainer>
         <Stack.Navigator

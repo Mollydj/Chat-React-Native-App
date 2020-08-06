@@ -1,11 +1,15 @@
 //chat orig
 import React from "react";
-import { View, Text, AsyncStorage } from "react-native";
+import { View, Text, AsyncStorage, Button, Image, Audio } from "react-native";
 //import NetInfo from 'react-native-netinfo'
 import NetInfo from "@react-native-community/netinfo";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
+import CustomActions from "./CustomActions";
+
 const firebase = require("firebase");
 require("firebase/firestore");
+
+
 
 export default class Chat extends React.Component {
   // The application’s main Chat component that renders the chat UI
@@ -21,7 +25,9 @@ export default class Chat extends React.Component {
         name: "",
         avatar: "",
       },
-           // isConnected: false,
+      // isConnected: false,
+      image: null,
+      location: null,
     };
 
     if (!firebase.apps.length) {
@@ -40,12 +46,11 @@ export default class Chat extends React.Component {
   }
 
   componentDidMount() {
-
     NetInfo.isConnected.fetch().then((isConnected) => {
       if (isConnected === true) {
         // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
         // });
-        
+
         this.authUnsubscribe = firebase
           .auth()
           .onAuthStateChanged(async (user) => {
@@ -61,29 +66,26 @@ export default class Chat extends React.Component {
               isConnected: true,
             });
             //}
-            console.log('online ' + this.state.isConnected);
+            console.log("online " + this.state.isConnected);
             this.unsubscribe = this.referenceMessages
               .orderBy("createdAt", "desc")
               .onSnapshot(this.onCollectionUpdate);
           });
       } else {
-        
-       this.setState({ 
-         isConnected: false,
-         });
-       this.getMsgs();
-        console.log('offline ' + this.state.isConnected);
-s
+        this.setState({
+          isConnected: false,
+        });
+        this.getMsgs();
+        console.log("offline " + this.state.isConnected);
+        s;
       }
     });
-    console.log('__________________');
-  } 
-
+    console.log("__________________");
+  }
 
   componentWillUnmount() {
     this.authUnsubscribe();
     this.unsubscribe();
-    
   }
 
   onSend(messages = []) {
@@ -112,6 +114,8 @@ s
           name: data.user.name,
           avatar: data.user.avatar,
         },
+        image: data.image || '',
+        location: data.location,
       });
     });
     this.setState({
@@ -127,8 +131,12 @@ s
       createdAt: message.createdAt,
       user: message.user,
       uid: this.state.uid,
+      image: message.image,
+      location: message.location,
     });
   };
+
+  //Async Function
 
   async getMsgs() {
     let messages = "";
@@ -159,6 +167,7 @@ s
     }
   }
 
+  //UI related Functions
   renderBubble(props) {
     return (
       <Bubble
@@ -179,19 +188,29 @@ s
     }
   }
 
-  render() {
-    //console.log(this.state.isConnected)
-    
-    console.log(this.state.messages)
-    NetInfo.isConnected.fetch().then(isConnected => {
-      if(isConnected)
-      {
-      console.log('Internet is connected');
-      } else {
-        console.log('Internet is offline');
-      }
-      });
+  renderCustomActions = (props) => {
+    return <CustomActions {...props} />;
+  };
 
+  renderCustomView(props) {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <MapView
+          style={{ width: 150, height: 100, borderRadius: 13, margin: 3 }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
+  }
+
+  render() {
     return (
       <View
         style={[
@@ -202,12 +221,34 @@ s
           },
         ]}
       >
+        {this.state.image && (
+          <Image
+            source={{ uri: this.state.image.uri }}
+            style={{ width: 200, height: 200 }}
+          />
+        )}
+
+        {this.state.location && (
+          <MapView
+            style={{ width: 300, height: 200 }}
+            region={{
+              latitude: this.state.location.coords.latitude,
+              longitude: this.state.location.coords.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}
+          />
+        )}
+
         <GiftedChat //Componenet comes with its own props. Providing GC with messages and info about the usesr
           renderBubble={this.renderBubble.bind(this)} //Chat bubble
           renderInputToolbar={this.renderInputToolbar.bind(this)} //Hide if offline
           messages={this.state.messages} //State messages will be deisplayed
           //deleteMsgs={(messages) => this.deleteMsgs()}
           onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
+          renderActions={this.renderCustomActions}
+          renderCustomView={this.renderCustomView}
+          image={this.state.image}
           user={{
             _id: this.state.uid,
           }}
