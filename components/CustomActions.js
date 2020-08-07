@@ -39,15 +39,21 @@ export default class CustomActions extends React.Component {
         mediaTypes: "Images",
       }).catch((error) => console.log(error));
 
+      const imageLink = result.uri;
+
+      //   if (!result.cancelled) {
+      //     this.setState({
+      //       image: result
+      //     });
+
+      //   }
+
       if (!result.cancelled) {
-        this.setState({
-          image: result.uri,
-        });
-        // console.log(this.state.image)
+        this.uploadImage(imageLink);
+        const imageUrl = await this.uploadImage(result.uri);
       }
     }
   };
-
   takePhoto = async () => {
     try {
       const { status } = await Permissions.askAsync(
