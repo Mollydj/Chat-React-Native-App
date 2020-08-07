@@ -1,70 +1,35 @@
 import PropTypes from "prop-types";
-import React, {Component} from "react";
+import React, { Component } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import * as Location from 'expo-location';
-import MapView from 'react-native-maps';
+import * as Location from "expo-location";
+import MapView from "react-native-maps";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
 
+const firebase = require("firebase");
 
-export default class CustomActions extends Component {
-
-    constructor() {
-        super();
-      }
-
-    //   service firebase.storage {
-    //     match /b/{bucket}/o {
-    //       match /{allPaths=**} {
-    //         allow read, write: if request.auth != null;
-    //       }
-    //     }
-    //   }
-
-  // upload image to Storage with XMLHttpRequest
-
-
-  uploadImage = async(uri) => {
+export default class CustomActions extends React.Component {
+  uploadImage = async () => {
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.onload = function() {
+      xhr.onload = function () {
         resolve(xhr.response);
       };
-      xhr.onerror = function(e) {
+      xhr.onerror = function (e) {
         console.log(e);
-        reject(new TypeError('Network request failed'));
+        reject(new TypeError("Network request failed"));
       };
-      xhr.responseType = 'blob';
-      xhr.open('GET', uri, true);
+      xhr.responseType = "blob";
+      xhr.open("GET", uri, true);
       xhr.send(null);
     });
 
-    const ref = firebase
-      .storage()
-      .ref()
-      .child(this.state.image);
-    
+    const ref = firebase.storage().ref().child("IMG_2226-Enhanced");
     const snapshot = await ref.put(blob);
 
     blob.close();
-
-    return await snapshot.ref.getDownloadURL();
-  }
-
-  // upload image to Storage with fetch() and blob()
-  uploadImageFetch = async(uri) => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    const ref = firebase
-      .storage()
-      .ref()
-      .child("IMG_2226-Enhanced");
-    
-      const snapshot = await ref.put(blob);
-    
-    return await snapshot.ref.getDownloadURL();
-  }
+  };
 
   pickImage = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
@@ -76,55 +41,87 @@ export default class CustomActions extends Component {
 
       if (!result.cancelled) {
         this.setState({
-          image: result,
+          image: result.uri,
         });
+        // console.log(this.state.image)
       }
     }
   };
 
   takePhoto = async () => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA);
-
-    if (status === "granted") {
-      let result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "Images",
-      }).catch((error) => console.log(error));
-
-      if (!result.cancelled) {
-        this.setState({
-          image: result,
-        });
+    try {
+      const { status } = await Permissions.askAsync(
+        Permissions.CAMERA_ROLL,
+        Permissions.CAMERA
+      );
+      if (status === "granted") {
+        let result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        }).catch((error) => console.log(error));
+        if (!result.cancelled) {
+          const imageUrl = await this.uploadImage(result.uri);
+          this.props.onSend({ image: imageUrl });
+        }
       }
+    } catch (error) {
+      console.log(error.message);
     }
   };
 
-  recording = async () => {
-        
-    const recording = new Audio.Recording();
-    
-    try {
-      await recording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
-      await recording.startAsync();
-      // You are now recording!
-    } catch (error) {
-      // An error occurred!
-    }
-  }
-  
   getLocation = async () => {
-    const { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if(status === 'granted') {
-      let result = await Location.getCurrentPositionAsync({});
- 
-      if (result) {
-        this.setState({
-          location: result
-        });
-    }
-    }
-  }
+    try {
+      const { status } = await Permissions.askAsync(Permissions.LOCATION);
 
-  onActionsPress = () => {
+      if (status === "granted") {
+        let result = await Location.getCurrentPositionAsync({}).catch((error) =>
+          console.log(error)
+        );
+        const longitude = JSON.stringify(result.coords.longitude);
+        const latitude = JSON.stringify(result.coords.latitude);
+        if (result) {
+          this.props.onSend({
+            location: {
+              longitude: result.coords.longitude,
+              latitude: result.coords.latitude,
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  uploadImage = async (uri) => {
+    try {
+      const blob = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          resolve(xhr.response);
+        };
+        xhr.onerror = function (e) {
+          console.log(e);
+          reject(new TypeError("Network request failed"));
+        };
+        xhr.responseType = "blob";
+        xhr.open("GET", uri, true);
+        xhr.send(null);
+      });
+      //this will make a unique file name for each image uploaded
+      let uriParts = uri.split("/");
+      let imageName = uriParts[uriParts.length - 1];
+
+      const ref = firebase.storage().ref().child(`${imageName}`);
+      const snapshot = await ref.put(blob);
+      blob.close();
+      const imageUrl = await snapshot.ref.getDownloadURL();
+      return imageUrl;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  onActionPress = () => {
     const options = [
       "Choose From Library",
       "Take Picture",
@@ -140,13 +137,14 @@ export default class CustomActions extends Component {
       async (buttonIndex) => {
         switch (buttonIndex) {
           case 0:
-            this.pickImage();
-            return;
+            console.log("user wants to pick an image");
+            return this.pickImage();
           case 1:
-            this.takePhoto();
-            return;
+            console.log("user wants to take a picture");
+            return this.takePhoto();
           case 2:
-            this.getLocation();
+            console.log("user wants to get their location");
+            return this.getLocation();
           default:
         }
       }
@@ -154,18 +152,13 @@ export default class CustomActions extends Component {
   };
 
   render() {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-
-    var ref = firebase.storage().ref().child("IMG_2226-Enhanced");
-
-    const snapshot = await ref.put(blob);
-
-    await snapshot.ref.getDownloadURL();
     return (
       <TouchableOpacity
         style={[styles.container]}
-        onPress={this.onActionsPress}
+        onPress={this.onActionPress}
+        accessible={true}
+        accessibilityLabel="More actions"
+        accessibilityHint="Allows you to send an image or your geolocation"
       >
         <View style={[styles.wrapper, this.props.wrapperStyle]}>
           <Text style={[styles.iconText, this.props.iconTextStyle]}>+</Text>

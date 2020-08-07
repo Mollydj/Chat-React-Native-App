@@ -26,8 +26,8 @@ export default class Chat extends React.Component {
         avatar: "",
       },
       // isConnected: false,
-      image: null,
-      location: null,
+      // image: null,
+      // location: null,
     };
 
     if (!firebase.apps.length) {
@@ -211,6 +211,7 @@ export default class Chat extends React.Component {
   }
 
   render() {
+
     return (
       <View
         style={[
