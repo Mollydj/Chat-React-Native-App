@@ -3,13 +3,18 @@ import React, { Component } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import * as Location from "expo-location";
-import MapView from "react-native-maps";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
 
 const firebase = require("firebase");
 
 export default class CustomActions extends React.Component {
+
+    state = {
+        image: null,
+        location: null
+      };
+      
   uploadImage = async () => {
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -41,62 +46,41 @@ export default class CustomActions extends React.Component {
 
       const imageLink = result.uri;
 
-      //   if (!result.cancelled) {
-      //     this.setState({
-      //       image: result
-      //     });
-
-      //   }
 
       if (!result.cancelled) {
-        this.uploadImage(imageLink);
+        //this.uploadImage(imageLink);
         const imageUrl = await this.uploadImage(result.uri);
+        this.props.onSend({ image: imageUrl });
       }
     }
   };
   takePhoto = async () => {
-    try {
-      const { status } = await Permissions.askAsync(
-        Permissions.CAMERA_ROLL,
-        Permissions.CAMERA
-      );
-      if (status === "granted") {
-        let result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        }).catch((error) => console.log(error));
-        if (!result.cancelled) {
-          const imageUrl = await this.uploadImage(result.uri);
-          this.props.onSend({ image: imageUrl });
-        }
+    const { status } = await Permissions.askAsync(Permissions.CAMERA);
+
+    if (status === "granted") {
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: "Images",
+      }).catch((error) => console.log(error));
+
+      if (!result.cancelled) {
+        const imageUrl = await this.uploadImage(result.uri);
+        this.props.onSend({ image: imageUrl });
       }
-    } catch (error) {
-      console.log(error.message);
     }
   };
 
   getLocation = async () => {
-    try {
-      const { status } = await Permissions.askAsync(Permissions.LOCATION);
-
-      if (status === "granted") {
-        let result = await Location.getCurrentPositionAsync({}).catch((error) =>
-          console.log(error)
-        );
-        const longitude = JSON.stringify(result.coords.longitude);
-        const latitude = JSON.stringify(result.coords.latitude);
-        if (result) {
-          this.props.onSend({
-            location: {
-              longitude: result.coords.longitude,
-              latitude: result.coords.latitude,
-            },
-          });
-        }
+    const { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if(status === 'granted') {
+      let result = await Location.getCurrentPositionAsync({});
+ 
+      if (!result.cancelled) {
+        // const exactLocation = await this.uploadImage(result.uri);
+        // this.props.onSend({ location: exactLocation });
       }
-    } catch (error) {
-      console.log(error);
+      console.log(result)
     }
-  };
+  }
 
   uploadImage = async (uri) => {
     try {

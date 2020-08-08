@@ -5,6 +5,9 @@ import { View, Text, AsyncStorage, Button, Image, Audio } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import CustomActions from "./CustomActions";
+import MapView from "react-native-maps";
+
+
 
 const firebase = require("firebase");
 require("firebase/firestore");
@@ -26,7 +29,7 @@ export default class Chat extends React.Component {
         avatar: "",
       },
       // isConnected: false,
-      // image: null,
+       //image: null,
       // location: null,
     };
 
@@ -115,7 +118,7 @@ export default class Chat extends React.Component {
           avatar: data.user.avatar,
         },
         image: data.image || '',
-        location: data.location,
+        location: data.location || '',
       });
     });
     this.setState({
@@ -131,8 +134,8 @@ export default class Chat extends React.Component {
       createdAt: message.createdAt,
       user: message.user,
       uid: this.state.uid,
-      image: message.image,
-      location: message.location,
+      image: message.image || '',
+      location: message.location || '',
     });
   };
 
@@ -211,7 +214,7 @@ export default class Chat extends React.Component {
   }
 
   render() {
-
+    console.log(this.state.messages[0])
     return (
       <View
         style={[

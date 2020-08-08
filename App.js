@@ -30,8 +30,9 @@ export default class HelloWorld extends Component {
             headerShown: false,
           }}
         >
-          <Stack.Screen name="Start" component={Start} />
           <Stack.Screen name="Chat" component={Chat} />
+          <Stack.Screen name="Start" component={Start} />
+       
         </Stack.Navigator>
       </NavigationContainer>
     );
