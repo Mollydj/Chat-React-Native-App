@@ -54,6 +54,7 @@ export default class CustomActions extends React.Component {
       }
     }
   };
+
   takePhoto = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
 
@@ -73,15 +74,19 @@ export default class CustomActions extends React.Component {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
     if(status === 'granted') {
       let result = await Location.getCurrentPositionAsync({});
- 
-      if (!result.cancelled) {
-        // const exactLocation = await this.uploadImage(result.uri);
-        // this.props.onSend({ location: exactLocation });
-      }
       console.log(result)
+      if (!result.cancelled) {
+         const location = await Location.getCurrentPositionAsync({}); 
+         console.log(location)
+         this.props.onSend({
+          location: {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude
+          }
+         });
+      }
     }
   }
-
   uploadImage = async (uri) => {
     try {
       const blob = await new Promise((resolve, reject) => {

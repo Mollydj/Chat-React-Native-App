@@ -253,9 +253,9 @@ export default class Chat extends React.Component {
           renderActions={this.renderCustomActions}
           renderCustomView={this.renderCustomView}
           image={this.state.image}
-          user={{
-            _id: this.state.uid,
-          }}
+          // user={{
+          //   _id: 1,
+          // }}
         />
       </View>
     );
