@@ -1,5 +1,4 @@
-//chat orig
-import React from "react";
+import React from 'react';
 import { View, Text, AsyncStorage, Button, Image, Audio } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
@@ -43,7 +42,12 @@ export default class Chat extends React.Component {
     this.referenceMessages = firebase.firestore().collection("usermessages");
   }
 
+
+  
+
   componentDidMount() {
+
+
     NetInfo.isConnected.fetch().then((isConnected) => {
       if (isConnected === true) {
         this.authUnsubscribe = firebase
@@ -62,7 +66,6 @@ export default class Chat extends React.Component {
               loggedInText: "Hello there",
               isConnected: true,
             });
-
             console.log("online " + this.state.isConnected);
             this.unsubscribe = this.referenceMessages
               .orderBy("createdAt", "desc")
@@ -142,6 +145,7 @@ export default class Chat extends React.Component {
         messages: JSON.parse(messages),
       });
     } catch (error) {}
+    
   }
 
   async saveMsgs() {
