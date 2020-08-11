@@ -1,18 +1,13 @@
 //chat orig
 import React from "react";
 import { View, Text, AsyncStorage, Button, Image, Audio } from "react-native";
-//import NetInfo from 'react-native-netinfo'
 import NetInfo from "@react-native-community/netinfo";
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import CustomActions from "./CustomActions";
 import MapView from "react-native-maps";
 
-
-
 const firebase = require("firebase");
 require("firebase/firestore");
-
-
 
 export default class Chat extends React.Component {
   // The application’s main Chat component that renders the chat UI
@@ -29,7 +24,7 @@ export default class Chat extends React.Component {
         avatar: "",
       },
       // isConnected: false,
-       //image: null,
+      //image: null,
       // location: null,
     };
 
@@ -51,24 +46,23 @@ export default class Chat extends React.Component {
   componentDidMount() {
     NetInfo.isConnected.fetch().then((isConnected) => {
       if (isConnected === true) {
-        // console.log('First, is ' + (isConnected ? 'online' : 'offline'));
-        // });
-
         this.authUnsubscribe = firebase
           .auth()
           .onAuthStateChanged(async (user) => {
             if (!user) {
               await firebase.auth().signInAnonymously();
-            } //else {
-            //update user state with currently active user data
+            } //update user state with currently active user data
+
             this.setState({
               user: {
                 _id: user.uid,
+                name: this.props.route.params.name,
+                avatar: "https://placeimg.com/140/140/any",
               },
               loggedInText: "Hello there",
               isConnected: true,
             });
-            //}
+
             console.log("online " + this.state.isConnected);
             this.unsubscribe = this.referenceMessages
               .orderBy("createdAt", "desc")
@@ -80,10 +74,8 @@ export default class Chat extends React.Component {
         });
         this.getMsgs();
         console.log("offline " + this.state.isConnected);
-        s;
       }
     });
-    console.log("__________________");
   }
 
   componentWillUnmount() {
@@ -112,13 +104,9 @@ export default class Chat extends React.Component {
         _id: data._id,
         text: data.text,
         createdAt: data.createdAt.toDate(),
-        user: {
-          _id: data.user._id,
-          name: data.user.name,
-          avatar: data.user.avatar,
-        },
-        image: data.image || '',
-        location: data.location || '',
+        user: data.user,
+        image: data.image || "",
+        location: data.location || "",
       });
     });
     this.setState({
@@ -132,10 +120,15 @@ export default class Chat extends React.Component {
       _id: message._id,
       text: message.text || "",
       createdAt: message.createdAt,
-      user: message.user,
+      user: {
+        _id: message.user._id,
+        name: message.user.name,
+        avatar: message.user.avatar,
+      },
       uid: this.state.uid,
-      image: message.image || '',
-      location: message.location || '',
+      image: message.image || "",
+      location: message.location || "",
+      system: message.system,
     });
   };
 
@@ -214,7 +207,7 @@ export default class Chat extends React.Component {
   }
 
   render() {
-    console.log(this.state.messages[0])
+    console.log(this.state.messages[0]);
     return (
       <View
         style={[
@@ -247,15 +240,12 @@ export default class Chat extends React.Component {
         <GiftedChat //Componenet comes with its own props. Providing GC with messages and info about the usesr
           renderBubble={this.renderBubble.bind(this)} //Chat bubble
           renderInputToolbar={this.renderInputToolbar.bind(this)} //Hide if offline
-          messages={this.state.messages} //State messages will be deisplayed
-          //deleteMsgs={(messages) => this.deleteMsgs()}
-          onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
           renderActions={this.renderCustomActions}
           renderCustomView={this.renderCustomView}
-          image={this.state.image}
-          // user={{
-          //   _id: 1,
-          // }}
+          messages={this.state.messages} //State messages will be deisplayed
+          onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
+          user={this.state.user}
+          showUserAvatar={true}
         />
       </View>
     );

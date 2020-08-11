@@ -9,31 +9,9 @@ import * as ImagePicker from "expo-image-picker";
 const firebase = require("firebase");
 
 export default class CustomActions extends React.Component {
-
-    state = {
-        image: null,
-        location: null
-      };
-      
-  uploadImage = async () => {
-    const blob = await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = function () {
-        resolve(xhr.response);
-      };
-      xhr.onerror = function (e) {
-        console.log(e);
-        reject(new TypeError("Network request failed"));
-      };
-      xhr.responseType = "blob";
-      xhr.open("GET", uri, true);
-      xhr.send(null);
-    });
-
-    const ref = firebase.storage().ref().child("IMG_2226-Enhanced");
-    const snapshot = await ref.put(blob);
-
-    blob.close();
+  state = {
+    image: null,
+    location: null,
   };
 
   pickImage = async () => {
@@ -46,9 +24,8 @@ export default class CustomActions extends React.Component {
 
       const imageLink = result.uri;
 
-
       if (!result.cancelled) {
-        //this.uploadImage(imageLink);
+ 
         const imageUrl = await this.uploadImage(result.uri);
         this.props.onSend({ image: imageUrl });
       }
@@ -72,21 +49,21 @@ export default class CustomActions extends React.Component {
 
   getLocation = async () => {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if(status === 'granted') {
+    if (status === "granted") {
       let result = await Location.getCurrentPositionAsync({});
-      console.log(result)
+      console.log(result);
       if (!result.cancelled) {
-         const location = await Location.getCurrentPositionAsync({}); 
-         console.log(location)
-         this.props.onSend({
+        const location = await Location.getCurrentPositionAsync({});
+        console.log(location);
+        this.props.onSend({
           location: {
             latitude: location.coords.latitude,
-            longitude: location.coords.longitude
-          }
-         });
+            longitude: location.coords.longitude,
+          },
+        });
       }
     }
-  }
+  };
   uploadImage = async (uri) => {
     try {
       const blob = await new Promise((resolve, reject) => {
@@ -102,7 +79,7 @@ export default class CustomActions extends React.Component {
         xhr.open("GET", uri, true);
         xhr.send(null);
       });
-      //this will make a unique file name for each image uploaded
+
       let uriParts = uri.split("/");
       let imageName = uriParts[uriParts.length - 1];
 
