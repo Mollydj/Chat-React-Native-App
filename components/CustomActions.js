@@ -25,7 +25,7 @@ export default class CustomActions extends React.Component {
       const imageLink = result.uri;
 
       if (!result.cancelled) {
- 
+        //this.uploadImage(imageLink);
         const imageUrl = await this.uploadImage(result.uri);
         this.props.onSend({ image: imageUrl });
       }
@@ -79,7 +79,7 @@ export default class CustomActions extends React.Component {
         xhr.open("GET", uri, true);
         xhr.send(null);
       });
-
+      //this will make a unique file name for each image uploaded
       let uriParts = uri.split("/");
       let imageName = uriParts[uriParts.length - 1];
 

@@ -107,9 +107,13 @@ export default class Chat extends React.Component {
         _id: data._id,
         text: data.text,
         createdAt: data.createdAt.toDate(),
-        user: data.user,
-        image: data.image || "",
-        location: data.location || "",
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+          avatar: data.user.avatar,
+        },
+        image: data.image || '',
+        location: data.location || '',
       });
     });
     this.setState({
@@ -123,15 +127,10 @@ export default class Chat extends React.Component {
       _id: message._id,
       text: message.text || "",
       createdAt: message.createdAt,
-      user: {
-        _id: message.user._id,
-        name: message.user.name,
-        avatar: message.user.avatar,
-      },
+      user: message.user,
       uid: this.state.uid,
-      image: message.image || "",
-      location: message.location || "",
-      system: message.system,
+      image: message.image || '',
+      location: message.location || '',
     });
   };
 
