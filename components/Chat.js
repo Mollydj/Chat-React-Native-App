@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, AsyncStorage, Button, Image, Audio } from "react-native";
-import NetInfo from "@react-native-community/netinfo";
-import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
-import CustomActions from "./CustomActions";
-import MapView from "react-native-maps";
+import { View, AsyncStorage, Image } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
+import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
+import MapView from 'react-native-maps';
+import CustomActions from './CustomActions';
 
-const firebase = require("firebase");
-require("firebase/firestore");
+const firebase = require('firebase');
+require('firebase/firestore');
 
 export default class Chat extends React.Component {
   // The application’s main Chat component that renders the chat UI
@@ -16,38 +16,33 @@ export default class Chat extends React.Component {
 
     this.state = {
       messages: [],
-      uid: "",
+      uid: '',
       user: {
-        _id: "",
-        name: "",
-        avatar: "",
+        _id: '',
+        name: '',
+        avatar: '',
       },
-      // isConnected: false,
-      //image: null,
+      isConnected: '',
+      // image: null,
       // location: null,
     };
 
     if (!firebase.apps.length) {
       firebase.initializeApp({
-        apiKey: "AIzaSyCwiEp27P3CiEB_p4KT9-KxvUb5axjW_WE",
-        authDomain: "test-chatapp-midj.firebaseapp.com",
-        databaseURL: "https://test-chatapp-midj.firebaseio.com",
-        projectId: "test-chatapp-midj",
-        storageBucket: "test-chatapp-midj.appspot.com",
-        messagingSenderId: "987831814509",
+        apiKey: 'AIzaSyCwiEp27P3CiEB_p4KT9-KxvUb5axjW_WE',
+        authDomain: 'test-chatapp-midj.firebaseapp.com',
+        databaseURL: 'https://test-chatapp-midj.firebaseio.com',
+        projectId: 'test-chatapp-midj',
+        storageBucket: 'test-chatapp-midj.appspot.com',
+        messagingSenderId: '987831814509',
       });
     }
 
-    //Read all documents in the messages collection
-    this.referenceMessages = firebase.firestore().collection("usermessages");
+    // Read all documents in the messages collection
+    this.referenceMessages = firebase.firestore().collection('usermessages');
   }
 
-
-  
-
   componentDidMount() {
-
-
     NetInfo.isConnected.fetch().then((isConnected) => {
       if (isConnected === true) {
         this.authUnsubscribe = firebase
@@ -55,20 +50,19 @@ export default class Chat extends React.Component {
           .onAuthStateChanged(async (user) => {
             if (!user) {
               await firebase.auth().signInAnonymously();
-            } //update user state with currently active user data
+            } // update user state with currently active user data
 
             this.setState({
               user: {
                 _id: user.uid,
                 name: this.props.route.params.name,
-                avatar: "https://placeimg.com/140/140/any",
+                avatar: 'https://placeimg.com/140/140/any',
               },
-              loggedInText: "Hello there",
+              loggedInText: 'Hello there',
               isConnected: true,
             });
-            console.log("online " + this.state.isConnected);
             this.unsubscribe = this.referenceMessages
-              .orderBy("createdAt", "desc")
+              .orderBy('createdAt', 'desc')
               .onSnapshot(this.onCollectionUpdate);
           });
       } else {
@@ -76,14 +70,13 @@ export default class Chat extends React.Component {
           isConnected: false,
         });
         this.getMsgs();
-        console.log("offline " + this.state.isConnected);
       }
     });
   }
 
   componentWillUnmount() {
-    this.authUnsubscribe();
-    this.unsubscribe();
+      this.authUnsubscribe();
+      this.unsubscribe();
   }
 
   onSend(messages = []) {
@@ -94,14 +87,14 @@ export default class Chat extends React.Component {
       () => {
         this.addMsg();
         this.saveMsgs();
-      }
+      },
     );
   }
 
   onCollectionUpdate = (querySnapshot) => {
-    const messages = []; //go through each document
+    const messages = []; // go through each document
     querySnapshot.forEach((doc) => {
-      //get the QueryDocumentShapshot's data
+      // get the QueryDocumentShapshot's data
       const data = doc.data();
       messages.push({
         _id: data._id,
@@ -121,10 +114,24 @@ export default class Chat extends React.Component {
     });
   };
 
+  // Async Function
+
+  async getMsgs() {
+    let messages = '';
+    try {
+      messages = (await AsyncStorage.getItem('messages')) || [];
+      this.setState({
+        messages: JSON.parse(messages),
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   addMsg = (message = this.state.messages[0]) => {
     this.referenceMessages.add({
       _id: message._id,
-      text: message.text || "",
+      text: message.text || '',
       createdAt: message.createdAt,
       user: message.user,
       uid: this.state.uid,
@@ -133,24 +140,11 @@ export default class Chat extends React.Component {
     });
   };
 
-  //Async Function
-
-  async getMsgs() {
-    let messages = "";
-    try {
-      messages = (await AsyncStorage.getItem("messages")) || [];
-      this.setState({
-        messages: JSON.parse(messages),
-      });
-    } catch (error) {}
-    
-  }
-
   async saveMsgs() {
     try {
       await AsyncStorage.setItem(
-        "messages",
-        JSON.stringify(this.state.messages)
+        'messages',
+        JSON.stringify(this.state.messages),
       );
     } catch (error) {
       console.log(error.message);
@@ -159,43 +153,48 @@ export default class Chat extends React.Component {
 
   async deleteMsgs() {
     try {
-      await AsyncStorage.removeItem("messages");
+      await AsyncStorage.removeItem('messages');
     } catch (error) {
       console.log(error.message);
     }
   }
 
-  //UI related Functions
+  // UI related Functions
   renderBubble(props) {
     return (
       <Bubble
         {...props}
         wrapperStyle={{
           right: {
-            backgroundColor: "#4C6475",
+            backgroundColor: '#4C6475',
           },
         }}
       />
     );
   }
 
-  renderInputToolbar(props) {
-    if (this.state.isConnected == false) {
+  renderInputToolbar = (props) => {
+    if (this.state.isConnected === false) {
     } else {
       return <InputToolbar {...props} />;
     }
-  }
+  };
 
   renderCustomActions = (props) => {
     return <CustomActions {...props} />;
   };
 
-  renderCustomView(props) {
+  renderCustomView =(props) => {
     const { currentMessage } = props;
     if (currentMessage.location) {
       return (
         <MapView
-          style={{ width: 150, height: 100, borderRadius: 13, margin: 3 }}
+          style={{
+            width: 150,
+            height: 100,
+            borderRadius: 13,
+            margin: 3,
+          }}
           region={{
             latitude: currentMessage.location.latitude,
             longitude: currentMessage.location.longitude,
@@ -209,13 +208,12 @@ export default class Chat extends React.Component {
   }
 
   render() {
-    console.log(this.state.messages[0]);
     return (
       <View
         style={[
           {
             flex: 1,
-            justifyContent: "center",
+            justifyContent: 'center',
             backgroundColor: this.props.route.params.userBackgroundColor,
           },
         ]}
@@ -239,13 +237,14 @@ export default class Chat extends React.Component {
           />
         )}
 
-        <GiftedChat //Componenet comes with its own props. Providing GC with messages and info about the usesr
-          renderBubble={this.renderBubble.bind(this)} //Chat bubble
-          renderInputToolbar={this.renderInputToolbar.bind(this)} //Hide if offline
+        <GiftedChat
+        // Componenet comes with its own props. Providing GC with messages and info about the usesr
+          renderBubble={this.renderBubble.bind(this)} // Chat bubble
+          renderInputToolbar={this.renderInputToolbar.bind(this)} // Hide if offline
           renderActions={this.renderCustomActions}
           renderCustomView={this.renderCustomView}
-          messages={this.state.messages} //State messages will be deisplayed
-          onSend={(messages) => this.onSend(messages)} //Whe user sends messages append this ID
+          messages={this.state.messages} // State messages will be deisplayed
+          onSend={(messages) => this.onSend(messages)} // Whe user sends messages append this ID
           user={this.state.user}
           showUserAvatar={true}
         />

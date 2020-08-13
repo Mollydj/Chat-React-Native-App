@@ -1,31 +1,27 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import PropTypes from 'prop-types';
+import React from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import * as Location from "expo-location";
-import * as Permissions from "expo-permissions";
-import * as ImagePicker from "expo-image-picker";
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
+import * as ImagePicker from 'expo-image-picker';
 
-const firebase = require("firebase");
+const firebase = require('firebase');
 
 export default class CustomActions extends React.Component {
-  state = {
-    image: null,
-    location: null,
-  };
-
   pickImage = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
 
-    if (status === "granted") {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "Images",
+    if (status === 'granted') {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'Images',
       }).catch((error) => console.log(error));
-
-      const imageLink = result.uri;
-
       if (!result.cancelled) {
-        //this.uploadImage(imageLink);
         const imageUrl = await this.uploadImage(result.uri);
         this.props.onSend({ image: imageUrl });
       }
@@ -35,9 +31,9 @@ export default class CustomActions extends React.Component {
   takePhoto = async () => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
 
-    if (status === "granted") {
-      let result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "Images",
+    if (status === 'granted') {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: 'Images',
       }).catch((error) => console.log(error));
 
       if (!result.cancelled) {
@@ -49,8 +45,8 @@ export default class CustomActions extends React.Component {
 
   getLocation = async () => {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status === "granted") {
-      let result = await Location.getCurrentPositionAsync({});
+    if (status === 'granted') {
+      const result = await Location.getCurrentPositionAsync({});
       console.log(result);
       if (!result.cancelled) {
         const location = await Location.getCurrentPositionAsync({});
@@ -73,15 +69,14 @@ export default class CustomActions extends React.Component {
         };
         xhr.onerror = function (e) {
           console.log(e);
-          reject(new TypeError("Network request failed"));
+          reject(new TypeError('Network request failed'));
         };
-        xhr.responseType = "blob";
-        xhr.open("GET", uri, true);
+        xhr.responseType = 'blob';
+        xhr.open('GET', uri, true);
         xhr.send(null);
       });
-      //this will make a unique file name for each image uploaded
-      let uriParts = uri.split("/");
-      let imageName = uriParts[uriParts.length - 1];
+      const uriParts = uri.split('/');
+      const imageName = uriParts[uriParts.length - 1];
 
       const ref = firebase.storage().ref().child(`${imageName}`);
       const snapshot = await ref.put(blob);
@@ -95,10 +90,10 @@ export default class CustomActions extends React.Component {
 
   onActionPress = () => {
     const options = [
-      "Choose From Library",
-      "Take Picture",
-      "Send Location",
-      "Cancel",
+      'Choose From Library',
+      'Take Picture',
+      'Send Location',
+      'Cancel',
     ];
     const cancelButtonIndex = options.length - 1;
     this.context.actionSheet().showActionSheetWithOptions(
@@ -109,17 +104,17 @@ export default class CustomActions extends React.Component {
       async (buttonIndex) => {
         switch (buttonIndex) {
           case 0:
-            console.log("user wants to pick an image");
+            console.log('user wants to pick an image');
             return this.pickImage();
           case 1:
-            console.log("user wants to take a picture");
+            console.log('user wants to take a picture');
             return this.takePhoto();
           case 2:
-            console.log("user wants to get their location");
+            console.log('user wants to get their location');
             return this.getLocation();
           default:
         }
-      }
+      },
     );
   };
 
@@ -149,16 +144,16 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     borderRadius: 13,
-    borderColor: "#b2b2b2",
+    borderColor: '#b2b2b2',
     borderWidth: 2,
     flex: 1,
   },
   iconText: {
-    color: "#b2b2b2",
-    fontWeight: "bold",
+    color: '#b2b2b2',
+    fontWeight: 'bold',
     fontSize: 16,
-    backgroundColor: "transparent",
-    textAlign: "center",
+    backgroundColor: 'transparent',
+    textAlign: 'center',
   },
 });
 
